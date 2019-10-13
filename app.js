@@ -48,6 +48,22 @@ const schema = new GraphQLSchema({
                 }
             }
         }
+    }),
+    mutation: new GraphQLObjectType({
+        name: "Mutation",
+        fields: {
+            person: {
+                type: personType,
+                args: {
+                    firstName: { type: GraphQLNonNull(GraphQLString) },
+                    lastName: { type: GraphQLNonNull(GraphQLString) }
+                },
+                resolve: (root, args, context, info) => {
+                    const newPerson = new personModel(args);
+                    return newPerson.save();
+                }
+            }
+        }
     })
 })
 
