@@ -7,14 +7,14 @@ const Mongoose = require("mongoose");
 
 const app = express();
 
-
-Mongoose.connect("mongodb://localhost:27017/people");
+Mongoose.connect("mongodb://localhost/people");
 
 // Creating a mongoose model ...
 const personModel = Mongoose.model("person", {
     firstName: String,
     lastName: String
 })
+
 
 // For GraphQl type definition ...
 const personType = new GraphQLObjectType({
@@ -27,17 +27,28 @@ const personType = new GraphQLObjectType({
 })
 
 // Creating schema for graphql,
-//  This will include all query and mutation etc ...
-const schema = new GraphQLObjectType({
-    name: "query",
-    fields: {
-        people: {
-            type: GraphQLList(personType),
-            resolve: (root, args, context, info) => {
-
+// This will include all query and mutation etc ...
+const schema = new GraphQLSchema({
+    query: new GraphQLObjectType({
+        name: "Query",
+        fields: {
+            people: {
+                type: GraphQLList(personType),
+                resolve: (root, args, context, info) => {
+                    return personModel.find().exec();
+                }
+            },
+            person: {
+                type: personType,
+                args: {
+                    id: { type: GraphQLNonNull(GraphQLID) }
+                },
+                resolve: (root, args, context, info) => {
+                    return personModel.findById(args.id).exec();
+                }
             }
         }
-    }
+    })
 })
 
 // Hooking up express with graphql ...
